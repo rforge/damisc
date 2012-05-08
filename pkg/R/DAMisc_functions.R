@@ -451,7 +451,7 @@ function (obj = obj, int.var = int.var, vars = vars, b = b, X = X)
     logit_se <- sqrt(diag(mat123 %*% vcov(obj) %*% t(mat123)))
     logit_t <- logitcc/logit_se
     out <- data.frame(int_eff = logitcc, linear = linear, phat = phat, 
-        se_int_eff = logit_se, tstat = logit_t)
+        se_int_eff = logit_se, zstat = logit_t)
     invisible(out)
 }
 logit_cd <-
@@ -496,7 +496,7 @@ function (obj = obj, int.var = int.var, vars = vars, b = b, X = X)
     logit_se <- sqrt(diag(mat123 %*% vcov(obj) %*% t(mat123)))
     logit_t <- logitcd/logit_se
     out <- data.frame(int_eff = logitcd, linear = linear, phat = phat, 
-        se_int_eff = logit_se, tstat = logit_t)
+        se_int_eff = logit_se, zstat = logit_t)
     invisible(out)
 }
 logit_dd <-
@@ -545,7 +545,7 @@ function (obj = obj, int.var = int.var, vars = vars, b = b, X = X)
     logit_se <- sqrt(diag(mat123 %*% vcov(obj) %*% t(mat123)))
     logit_t <- logitdd/logit_se
     out <- data.frame(int_eff = logitdd, linear = linear, phat = phat, 
-        se_int_eff = logit_se, tstat = logit_t)
+        se_int_eff = logit_se, zstat = logit_t)
     invisible(out)
 }
 mnlSig <-
@@ -1000,7 +1000,7 @@ function (obj = obj, int.var = int.var, vars = vars, b = b, X = X)
     probit_se <- sqrt(diag(mat123 %*% vcov(obj) %*% t(mat123)))
     probit_t <- probitcc/probit_se
     out <- data.frame(int_eff = probitcc, linear = linear, phat = phat, 
-        se_int_eff = probit_se, tstat = probit_t)
+        se_int_eff = probit_se, zstat = probit_t)
     invisible(out)
 }
 probit_cd <-
@@ -1044,7 +1044,7 @@ function (obj = obj, int.var = int.var, vars = vars, b = b, X = X)
     probit_se <- sqrt(diag(mat123 %*% vcov(obj) %*% t(mat123)))
     probit_t <- probitcd/probit_se
     out <- data.frame(int_eff = probitcd, linear = linear, phat = phat, 
-        se_int_eff = probit_se, tstat = probit_t)
+        se_int_eff = probit_se, zstat = probit_t)
     invisible(out)
 }
 probit_dd <-
@@ -1098,7 +1098,7 @@ function (obj = obj, int.var = int.var, vars = vars, b = b, X = X)
     probit_se <- sqrt(diag(mat123 %*% vcov(obj) %*% t(mat123)))
     probit_t <- probitdd/probit_se
     out <- data.frame(int_eff = probitdd, linear = linear, phat = phat, 
-        se_int_eff = probit_se, tstat = probit_t)
+        se_int_eff = probit_se, zstat = probit_t)
     invisible(out)
 }
 searchVarLabels <-

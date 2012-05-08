@@ -16,7 +16,7 @@ A data frame with the following variable:
 \item{linear}{The incorrectly calculated marginal effect following the linear model analogy.}
 \item{phat}{Predicted Pr(Y=1|X).}
 \item{se_int_eff}{Standard error of \code{int_eff}.}
-\item{tstat}{The interaction effect divided by its standard error}
+\item{zstat}{The interaction effect divided by its standard error}
 }
 \references{
 Norton, Edward C., Hua Wang and Chunrong Ai.  2004.  Computing Interaction Effects and Standard Errors in Logit and Probit Models.  The Stata Journal 4(2): 154-167.\cr
