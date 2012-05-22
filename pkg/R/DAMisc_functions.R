@@ -88,7 +88,7 @@ function (data, event, tvar, csunit, pad.ts = FALSE)
     invisible(data)
 }
 DAintfun <-
-function (obj, varnames, theta = 45, phi = 10) 
+function (obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL) 
 {
     require(sm)
     require(effects)
@@ -122,9 +122,11 @@ function (obj, varnames, theta = 45, phi = 10)
         pred2[dens$estimate < cutoff[2]] <- NA
         pred3 <- predsurf
         pred3[dens$estimate < cutoff[3]] <- NA
-        persp(v1.seq, v2.seq, predsurf, xlab = toupper(v1), ylab = toupper(v2), 
-            zlab = toupper("Predictions"), col = hcols[1], theta = theta, 
-            phi = phi)
+        persp(v1.seq, v2.seq, predsurf, 
+			xlab = ifelse(is.null(xlab), toupper(v1), xlab), 
+			ylab = ifelse(is.null(ylab), toupper(v2), ylab), 
+            zlab = ifelse(is.null(zlab), toupper("Predictions"), zlab), 
+			col = hcols[1], theta = theta, phi = phi)
         par(new = TRUE)
         persp(v1.seq, v2.seq, pred1, col = hcols[2], axes = FALSE, 
             xlab = "", ylab = "", zlab = "", theta = theta, phi = phi, 
@@ -145,7 +147,8 @@ function (obj, varnames, theta = 45, phi = 10)
 DAintfun2 <-
 function (obj, varnames, rug = TRUE, ticksize = -0.03, hist = FALSE, 
     hist.col = "gray75", nclass = c(10, 10), scale.hist = 0.5, 
-    border = NA, name.stem = "cond_eff", plot.type = "screen") 
+    border = NA, name.stem = "cond_eff", 
+	xlab = NULL, ylab=NULL, plot.type = "screen") 
 {
     rseq <- function(x) {
         rx <- range(x, na.rm = TRUE)
@@ -194,8 +197,8 @@ function (obj, varnames, rug = TRUE, ticksize = -0.03, hist = FALSE,
             par(mfrow = c(1, 2))
         }
         plot(s2, eff1, type = "n", ylim = range(c(low1, up1)), 
-            xlab = toupper(v2), ylab = paste("Conditional Effect of ", 
-                toupper(v1), " | ", toupper(v2), sep = ""))
+            xlab = ifelse(is.null(xlab), toupper(v2), xlab[1]), ylab = ifelse(is.null(ylab), paste("Conditional Effect of ", 
+                toupper(v1), " | ", toupper(v2), sep = ""), ylab[1]))
         if (hist == TRUE) {
             rng <- diff(par()$usr[3:4])
             h2 <- hist(obj$model[[v2]], nclass = nclass[1], plot = FALSE)
@@ -236,8 +239,9 @@ function (obj, varnames, rug = TRUE, ticksize = -0.03, hist = FALSE,
             postscript(paste(name.stem, "_", v2, ".eps", sep = ""))
         }
         plot(s1, eff2, type = "n", ylim = range(c(low2, up2)), 
-            xlab = toupper(v1), ylab = paste("Conditional Effect of ", 
-                toupper(v2), " | ", toupper(v1), sep = ""))
+            xlab = ifelse(is.null(xlab), toupper(v1), xlab[2]), 
+			ylab = ifelse(is.null(ylab), paste("Conditional Effect of ", 
+                toupper(v2), " | ", toupper(v1), sep = ""), ylab[2]))
         if (hist == TRUE) {
             rng <- diff(par()$usr[3:4])
             h1 <- hist(obj$model[[v1]], nclass = nclass[2], plot = FALSE)

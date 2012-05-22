@@ -3,13 +3,16 @@
 \title{Surface Plots for Two-Way Interactions}
 \description{Makes surface plots to display interactions between two continuous variables}
 \usage{
-DAintfun(obj, varnames, theta = 45, phi = 10)
+DAintfun(obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL)
 }
 \arguments{
   \item{obj}{A model object of class 'lm'}
   \item{varnames}{A two-element character vector where each element is the name of a variable involved in a two-way interaction.}
   \item{theta}{Angle defining the azimuthal viewing direction to be passed to \code{persp}}
   \item{phi}{Angle defining the colatitude viewing direction to be passed to \code{persp}}
+  \item{xlab}{Optional label to put on the x-axis, otherwise if \code{NULL}, it will take the first element of \code{varnames}}
+  \item{ylab}{Optional label to put on the y-axis, otherwise if \code{NULL}, it will take the second element of \code{varnames}}
+  \item{zlab}{Optional label to put on the z-axis, otherwise if \code{NULL}, it will be \sQuote{Predictions}}
 }
 \details{
 This function makes a surface plot of an interaction between two continuous covariates.  If the model is \cr

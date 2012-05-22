@@ -4,7 +4,8 @@
 \description{Generates two conditional effects plots for two interacted continuous covariates in linear models.}
 \usage{
 DAintfun2(obj, varnames, rug=TRUE, ticksize=-.03, hist=FALSE, hist.col="gray75", 
-	nclass=c(10, 10), scale.hist=.5, border=NA, name.stem = "cond_eff", plot.type = "screen")
+	nclass=c(10, 10), scale.hist=.5, border=NA, name.stem = "cond_eff", 
+	xlab = NULL, ylab = NULL, plot.type = "screen")
 }
 \arguments{
   \item{obj}{A model object of class `lm'}
@@ -17,6 +18,8 @@ DAintfun2(obj, varnames, rug=TRUE, ticksize=-.03, hist=FALSE, hist.col="gray75",
   \item{scale.hist}{A scalar in the range (0,1] indicating how much vertical space in the plotting region the histogram should take up.}
   \item{border}{Argument passed to \code{polygon} indicating how the border of the histogram bins should be printed (\code{NA} for no border).} 
   \item{name.stem}{A character string giving filename to which the appropriate extension will be appended}
+  \item{xlab}{Optional vector of length two giving the x-labels for the two plots that are generated.  The first element of the vector corresponds to the figure plotting the conditional effect of the first variable in \code{varnames} given the second and the second element of the vector corresponds to the figure plotting the conditional effect of the second variable in \code{varnames} conditional on the first.}
+  \item{ylab}{Optional vector of length two giving the y-labels for the two plots that are generated.  The first element of the vector corresponds to the figure plotting the conditional effect of the first variable in \code{varnames} given the second and the second element of the vector corresponds to the figure plotting the conditional effect of the second variable in \code{varnames} conditional on the first.}
   \item{plot.type}{One of `pdf', `png', `eps' or `screen', where the one of the first three will produce two graphs starting with \code{name.stem} written to the appropriate file type and the third will produce graphical output on the screen.}
 }
 \details{
@@ -40,5 +43,4 @@ Berry, W., M. Golder and D. Milton.  (2012)  Improving Tests of Theories Positin
 data(InteractionEx)
 mod <- lm(y ~ x1*x2 + z, data=InteractionEx)
 DAintfun2(mod, c("x1", "x2"), hist=TRUE, scale.hist=.3)
-
 }
