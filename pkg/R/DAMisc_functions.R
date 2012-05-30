@@ -1114,7 +1114,7 @@ function (dat, str)
     if ("variable.labels" %in% names(attributes(dat))) {
         vlat <- "variable.labels"
     }
-    ind <- grep(str, attr(dat, vlat), ignore.case = T)
+    ind <- uniont(grep(str, attr(dat, vlat), ignore.case = T), grep(str, names(dat), ignore.case = T))
     vldf <- data.frame(ind = ind, label = attr(dat, vlat)[ind])
     rownames(vldf) <- names(dat)[ind]
     vldf
