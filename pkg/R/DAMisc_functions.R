@@ -88,7 +88,7 @@ function (data, event, tvar, csunit, pad.ts = FALSE)
     invisible(data)
 }
 DAintfun <-
-function (obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL) 
+function (obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL,...) 
 {
     require(sm)
     require(effects)
@@ -126,7 +126,7 @@ function (obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL)
 			xlab = ifelse(is.null(xlab), toupper(v1), xlab), 
 			ylab = ifelse(is.null(ylab), toupper(v2), ylab), 
             zlab = ifelse(is.null(zlab), toupper("Predictions"), zlab), 
-			col = hcols[1], theta = theta, phi = phi)
+			col = hcols[1], theta = theta, phi = phi,...)
         par(new = TRUE)
         persp(v1.seq, v2.seq, pred1, col = hcols[2], axes = FALSE, 
             xlab = "", ylab = "", zlab = "", theta = theta, phi = phi, 
@@ -142,6 +142,7 @@ function (obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL)
             xlab = "", ylab = "", zlab = "", theta = theta, phi = phi, 
             zlim = c(min(c(predsurf)), max(c(predsurf))), ylim = c(min(v2.seq), 
                 max(v2.seq)), xlim = c(min(v1.seq), max(v1.seq)))
+	    invisible(list(x1=v1.seq, x2=v2.seq, pred=predsurf))
     }
 }
 DAintfun2 <-
@@ -1237,4 +1238,37 @@ function (obj, data, typical.dat = NULL, type = "count")
     ret <- list(diffs = diffs, minmax = minmax.mat)
     class(ret) <- "change"
     return(ret)
+}
+cat2Table <- function(eff.obj, digits=2, rownames = NULL, colnames=NULL){
+	print.digs <- paste("%.", digits, "f", sep="")
+	cis <- paste("(", 
+		sprintf(print.digs, eff.obj$lower), 
+		",",
+		sprintf(print.digs, eff.obj$upper), 
+		")", sep="")
+	cis.mat <- matrix(cis, 
+		nrow = length(levels(eff.obj$x[[1]])),
+		ncol = length(levels(eff.obj$x[[2]])))
+
+	out.mat <- NULL
+	est.mat <- matrix(sprintf(print.digs, eff.obj$fit),  
+		nrow = length(levels(eff.obj$x[[1]])),
+		ncol = length(levels(eff.obj$x[[2]])))
+	for(i in 1:nrow(est.mat)){
+		out.mat <- rbind(out.mat, est.mat[i,], cis.mat[i,])
+	}
+	if(is.null(colnames)){
+		colnames(out.mat) <- levels(eff.obj$x[[2]])
+	}
+	if(is.null(rownames)){
+		rn <- levels(eff.obj$x[[1]])
+	}else{
+		rn <- rownames
+		}
+		rn2 <- NULL
+		for(i in 1:length(rn)){
+			rn2 <- c(rn2, rn[i], paste(rep(" ", i), collapse=""))
+		}
+		rownames(out.mat) <- rn2
+	out.mat
 }
