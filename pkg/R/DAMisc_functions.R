@@ -1272,3 +1272,52 @@ cat2Table <- function(eff.obj, digits=2, rownames = NULL, colnames=NULL){
 		rownames(out.mat) <- rn2
 	out.mat
 }
+BGMtest <- function(obj, vars, digits = 3, level = 0.05, two.sided=T){
+	cl <- attr(terms(obj), "dataClasses")
+    if(any(cl[vars] != "numeric"))stop("Both variables in vars must be numeric")
+    facs <- apply(attr(terms(obj), "factors"), 1, sum)
+	if(any(facs[vars] != 2))stop("Each variable in vars must be involved in only 2 terms")
+    r.x <- range(obj$model[, vars[1]])
+	r.z <- range(obj$model[, vars[2]])
+	b <- coef(obj)
+	V <- vcov(obj)
+	nb <- names(b)
+	inds <- lapply(vars, function(x)grep(x, names(b)))
+	A <- matrix(0, nrow=5, ncol=length(b))
+    A[1:2, inds[[1]]] <- cbind(1, r.z)
+	A[3:4, inds[[2]]] <- cbind(1, r.x)
+    A[5, do.call(intersect, inds)] <- 1
+	cond.b <- A %*% b        
+	sp1 <- do.call(max, lapply(strsplit(gsub("-", "", as.character(cond.b)), split=".", fixed=T), function(x)nchar(x[1])))
+	cond.se <- sqrt(diag(A %*% V %*% t(A)))
+	sp2 <- do.call(max, lapply(strsplit(as.character(cond.se), split=".", fixed=T), function(x)nchar(x[1])))
+	cond.t <- cond.b/cond.se
+	sp3 <- do.call(max, lapply(strsplit(gsub("-", "", as.character(cond.t)), split=".", fixed=T), function(x)nchar(x[1])))
+	cond.p <- (2^two.sided)*pt(abs(cond.t), obj$df.residual, lower.tail=F)
+	pdigs1 <- paste("%", (sp1), ".", (digits), "f", sep="")     
+	pdigs2 <- paste("%", (sp2), ".", (digits), "f", sep="")     
+	pdigs3 <- paste("%", (sp3), ".", (digits), "f", sep="") 
+	pdigs4 <- paste("%.", digits, "f", sep="") 
+	rn <- c("P(X|Zmin)", "P(X|Zmax)", "P(Z|Xmin)", "P(Z|Xmax)", "P(XZ)")
+	out <- cbind(sprintf(pdigs1, cond.b), sprintf(pdigs2, cond.se), 
+		sprintf(pdigs3, cond.t), sprintf(pdigs4, cond.p))
+	if(any(out[,1] < 0)){
+		indp <- which(out[,1] > 0)
+		out[indp,1] <- paste(" ", out[indp,1], sep="")
+		out[indp,3] <- paste(" ", out[indp,3], sep="")
+	}
+	pad <- apply(out, 2, function(x)max(nchar(x)))
+	nchars <- nchar(out)
+	newchars <- t(apply(nchars, 1, function(x)pad-x))
+	tmp <- apply(newchars, c(1,2), function(x)ifelse(x > 0, rep(" ", x), ""))
+	out <- matrix(paste(tmp, out, sep=""), nrow=nrow(out), ncol=ncol(out))
+	rownames(out) <- rn
+	colnames(out) <- c(
+		paste(paste(rep(" ", pad[1]-3), collapse=""), "est", sep=""), 
+		paste(paste(rep(" ", pad[2]-2), collapse=""), "se", sep=""), 
+		paste(paste(rep(" ", pad[3]-1), collapse=""), "t", sep=""), 
+		ifelse(pad[4] > 6, 
+			paste(paste(rep(" ", pad[4]-6), collapse=""), "p-value", collapse=""), 
+			"p-value"))
+	return(noquote(out))
+}

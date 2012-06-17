@@ -2,7 +2,7 @@ Package: DAMisc
 Type: Package
 Title: Dave Armstrong's Miscellaneous Functions
 Version: 1.2
-Depends: effects, sm, MASS, nnet, splines, pscl, gdata
+Depends: car, effects, sm, MASS, nnet, splines, pscl, gdata
 Date: 2010-05-18
 Author: Dave Armstrong (UW-Milwaukee, Department of Political Science)
 Maintainer: Dave Armstrong <armstrod@uwm.edu>
