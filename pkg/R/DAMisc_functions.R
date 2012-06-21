@@ -1321,3 +1321,96 @@ BGMtest <- function(obj, vars, digits = 3, level = 0.05, two.sided=T){
 			"p-value"))
 	return(noquote(out))
 }
+intQualQuant <- function(obj, vars, labs=NULL, n=10){
+cl <- attr(terms(obj), "dataClasses")[vars]
+if(length(cl) != 2){
+	stop("vars must identify 2 and only 2 model terms")
+}
+if(!all(c("numeric", "factor") %in% cl)){
+	stop("vars must have one numeric and one factor")
+}
+facvar <- names(cl)[which(cl == "factor")]
+quantvar <- names(cl)[which(cl == "numeric")]
+faclevs <- obj$xlevels[[facvar]]
+if(is.null(labs)){
+	labs <- faclevs
+}
+qrange <- range(obj$model[[quantvar]], na.rm=TRUE)
+quantseq <- seq(qrange[1], qrange[2], length=n)
+b <- coef(obj)
+faccoef <- paste(facvar, faclevs, sep="")
+main.ind <- sapply(faccoef, function(x)
+	grep(paste("^", x, "$", sep=""), names(b)))
+main.ind <- sapply(main.ind, function(x)
+	ifelse(length(x) == 0, 0, x))
+int.ind1 <- sapply(faccoef, function(x){
+	g1 <- grep(paste("[a-z]*\\:", x, "$", sep=""), 
+		names(b))
+	ifelse(length(g1) == 0, 0, g1)
+})
+int.ind2 <- sapply(faccoef, function(x){
+	g2 <- grep(paste("^", x, "\\:[a-z]*", sep=""), 	
+		names(b))
+	ifelse(length(g2) == 0, 0, g2)
+})
+{if(sum(int.ind1) != 0){int.ind <- int.ind1}
+else{int.ind <- int.ind2}}
+
+inds <- cbind(main.ind, int.ind)
+inds <- inds[-which(main.ind == 0), ]
+
+combs <- combn(length(faclevs)-1, 2)
+tmp.A <- matrix(0, nrow=n, ncol=length(b))
+A.list <- list()
+k <- 1
+for(i in 1:nrow(inds)){
+	A.list[[k]] <- tmp.A
+	A.list[[k]][,inds[i,1]] <- 1
+	A.list[[k]][,inds[i,2]] <- quantseq
+	k <- k+1
+}
+for(i in 1:ncol(combs)){
+	A.list[[k]] <- tmp.A
+	A.list[[k]][,inds[combs[1,i], 1]] <- -1
+	A.list[[k]][,inds[combs[2,i], 1]] <- 1
+	A.list[[k]][,inds[combs[1,i], 2]] <- -quantseq
+	A.list[[k]][,inds[combs[2,i], 2]] <- quantseq
+	k <- k+1
+}
+
+effs <- lapply(A.list, function(x)x%*%b)
+se.effs <- lapply(A.list, function(x)sqrt(diag(x %*% vcov(obj)%*%t(x))))
+allcombs <- combn(length(faclevs), 2)
+list.labs <- apply(rbind(labs[allcombs[2,]], 
+	labs[allcombs[1,]]), 2, 
+	function(x)paste(x, collapse=" - "))
+
+names(A.list) <- list.labs
+dat <- data.frame(
+	fit = do.call("c", effs),
+	se.fit = do.call("c", se.effs),
+	x = rep(quantseq, length(A.list)),
+	contrast = rep(names(A.list), each=n)
+	)
+dat$lower <- dat$fit + qt(.025, obj$df.residual)*dat$se.fit
+dat$upper <- dat$fit + qt(.975, obj$df.residual)*dat$se.fit
+invisible(dat)
+}
+
+panel.ci <- function(x,y,subscripts,lower,upper,zl){
+	panel.lines(x,y,col="black")
+	panel.lines(x,lower[subscripts], col="black", lty=2)
+	panel.lines(x,upper[subscripts], col="black", lty=2)
+	if(zl)panel.abline(h=0, lty=3, col="gray50")
+}
+
+prepanel.ci <- function(x,y,subscripts, lower,upper){
+    x2 <- as.numeric(x)
+    list(xlim = range(x2, finite = TRUE), 
+         ylim = range(c(lower[subscripts], upper[subscripts]), 
+            finite = TRUE), 
+         dx = diff(range(x2, finite = TRUE)), 
+         dy = diff(range(c(lower[subscripts], upper[subscripts]), 
+            finite = TRUE)))
+}
+
