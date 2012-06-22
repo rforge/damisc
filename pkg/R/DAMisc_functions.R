@@ -1413,4 +1413,7 @@ prepanel.ci <- function(x,y,subscripts, lower,upper){
          dy = diff(range(c(lower[subscripts], upper[subscripts]), 
             finite = TRUE)))
 }
-
+panel.2cat <- function(x,y,subscripts,lower,upper){
+	panel.points(x,y, pch=16, col="black")
+	panel.arrows(x, lower[subscripts], x, upper[subscripts], code=3, angle=90, length=.2)
+}	
