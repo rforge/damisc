@@ -3,13 +3,16 @@
 \title{Predictions for Factor-Numeric Interactions in Linear Models}
 \description{This function works on linear models with a single interaction between a continuous (numeric) variable and a factor.  The output is a data frame that gives the predicted effect of moving from each category to each other category of the factor over the range of values of the continuous conditioning variable.}
 \usage{
-	intQualQuant(obj, vars, labs=NULL, n=10)
+	intQualQuant(obj, vars, level = .95, labs=NULL, 
+		n=10, onlySig=FALSE)
 }
 \arguments{
   \item{obj}{An object of class \code{lm}.}
   \item{vars}{A vector of two variable names giving the two quantitative variables involved in the interaction.  These variables must be involved in one, and only one, interaction. }
+  \item{level}{Confidence level desired for lower and upper bounds of confidence interval.}
   \item{labs}{An optional vector of labels that will be used to identify the effects, if \code{NULL}, the factor levels will be used.}
   \item{n}{Number of values of the conditioning variable to use.}
+  \item{onlySig}{Logical indicating whether only contrasts with significant differences should be returned.  Significance is determined to exist if the largest lower bound is greater than zero or the smallest upper bound is smaller than zero.}
 }
 \value{
 A data frame with the following values: 

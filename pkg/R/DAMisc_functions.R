@@ -1321,7 +1321,8 @@ BGMtest <- function(obj, vars, digits = 3, level = 0.05, two.sided=T){
 			"p-value"))
 	return(noquote(out))
 }
-intQualQuant <- function(obj, vars, labs=NULL, n=10){
+intQualQuant <- function(obj, vars, level=.95, 
+	labs=NULL, n=10, onlySig=FALSE){
 cl <- attr(terms(obj), "dataClasses")[vars]
 if(length(cl) != 2){
 	stop("vars must identify 2 and only 2 model terms")
@@ -1392,8 +1393,19 @@ dat <- data.frame(
 	x = rep(quantseq, length(A.list)),
 	contrast = rep(names(A.list), each=n)
 	)
-dat$lower <- dat$fit + qt(.025, obj$df.residual)*dat$se.fit
-dat$upper <- dat$fit + qt(.975, obj$df.residual)*dat$se.fit
+level <- level + ((1-level)/2)
+dat$lower <- dat$fit - qt(level, 	
+	obj$df.residual)*dat$se.fit
+dat$upper <- dat$fit + qt(level, 
+	obj$df.residual)*dat$se.fit
+if(onlySig){
+	sigs <- do.call(rbind, 
+		by(dat[,c("lower", "upper")], 
+		list(dat$contrast), function(x)
+		c(max(x[,1]), min(x[,2]))))
+	notsig <- which(sigs[,1] < 0 & sigs[,2] > 0)
+	dat <- dat[-which(dat$contrast %in% names(notsig)), ]
+}
 invisible(dat)
 }
 
