@@ -6,7 +6,7 @@
 glmChange(obj, data, typical.dat=NULL)
 }
 \arguments{
-  \item{obj}{A model object of class \code{\link{zeroinfl}}.}
+  \item{obj}{A model object of class \code{\link{glm}}.}
   \item{data}{Data frame used to fit \code{object}.}
   \item{typical.dat}{Data frame with a single row containing values at which to hold variables constant when calculating first differences.  These values will be passed to \code{predict}, so factors must take on a single value, but have all possible levels as their levels attribute.}
 }
