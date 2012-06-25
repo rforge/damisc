@@ -1429,3 +1429,65 @@ panel.2cat <- function(x,y,subscripts,lower,upper){
 	panel.points(x,y, pch=16, col="black")
 	panel.arrows(x, lower[subscripts], x, upper[subscripts], code=3, angle=90, length=.2)
 }	
+crTest <- function(model, adjust.method="none",...){
+	cl <- attr(terms(model), "dataClasses")
+	cl <- cl[which(cl != "factor")]
+    terms <- car:::predictor.names(model)
+	terms <- intersect(terms, names(cl))
+    if (any(attr(terms(model), "order") > 1)) {
+        stop("C+R plots not available for models with interactions.")
+    }
+	terms.list <- list()
+	orders <- sapply(terms, function(x)car:::df.terms(model, x))
+	for(i in 1:length(terms)){
+    tmp.x <- {if (car:::df.terms(model, terms[i]) > 1) predict(model, type = "terms", term = terms[i])
+    else model.matrix(model)[, terms[i]]}
+	if(!is.null(colnames(tmp.x))){colnames(tmp.x) <- "x"}
+	terms.list[[i]] <- data.frame(x=tmp.x, 
+		y = residuals.glm(model, "partial")[,terms[i]])
+}
+lo.mods <- lapply(terms.list, function(z)loess(y ~ x, data=z,...))
+lin.mods <- lapply(terms.list, function(z)lm(y ~ x, data=z))
+lo.rss <- sapply(lo.mods, function(x)sum(residuals(x)^2))
+lm.rss <- sapply(lin.mods, function(x)sum(residuals(x)^2))
+num.df <- sapply(lo.mods, function(x)x$trace.hat) - sapply(lin.mods, function(x)x$rank)
+denom.df <- sapply(terms.list, nrow) - sapply(lo.mods, function(x)x$trace.hat)
+F.stats <- ((lm.rss-lo.rss)/num.df)/(lo.rss/denom.df)
+pvals <- p.adjust(pf(F.stats, num.df, denom.df, lower.tail=F), method=adjust.method)
+out <- data.frame(
+	RSSp = sprintf("%.2f", lm.rss), 
+	RSSnp = sprintf("%.2f", lo.rss),
+	DFnum = sprintf("%.3f", num.df), 
+	DFdenom = sprintf("%.3f", denom.df), 
+	F = sprintf("%.3f", F.stats), 
+	p = sprintf("%.3f", pvals))
+rownames(out) <- terms
+return(out)
+}
+crSpanTest <- 
+function(model, spfromto, n=10, adjust.method = "none", adjust.type = c("within", "across", "both")){
+	span.seq <- seq(from=spfromto[1], to=spfromto[2], 
+		length=n)
+	out.list <- list()
+	for(i in 1:length(span.seq)){
+		out.list[[i]] <- crTest(model, adjust.method="none", 
+			span = span.seq[i])
+	}
+	pvals <- sapply(out.list, function(x)
+		as.numeric(as.character(x[,"p"])))
+	if(adjust.type == "within"){
+		pvals <- apply(pvals, 2, p.adjust, 	
+			method=adjust.method)
+	}
+	if(adjust.type == "across"){
+		pvals <- t(apply(pvals, 1, p.adjust, 
+			method=adjust.method))
+	}
+	if(adjust.type == "both"){
+		pvals <- matrix(p.adjust(c(pvals), 
+			method=adjust.method), 
+			nrow=nrow(pvals))
+	}
+	rownames(pvals) <- predictor.names(model)
+	ret = list(x=span.seq, y=t(pvals))
+}

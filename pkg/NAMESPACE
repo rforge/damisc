@@ -1,0 +1,25 @@
+export(
+	BGMtest, 
+	binfit, 
+	btscs,
+	cat2Table,
+	crTest,
+	crSpanTest, 
+	DAintfun,
+	DAintfun2, 
+	glmChange, 
+	intEff,
+	intQualQuant,
+	mnlSig, 
+	multiChange,
+	ordChange,
+	panel.2cat,
+	panel.ci, 
+	poisGOF, 
+	pre, 
+	prepanel.ci, 
+	searchVarLabels, 
+	ziChange
+)
+
+S3method(print, pre)
