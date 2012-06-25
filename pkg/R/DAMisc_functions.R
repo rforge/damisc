@@ -1465,7 +1465,7 @@ rownames(out) <- terms
 return(out)
 }
 crSpanTest <- 
-function(model, spfromto, n=10, adjust.method = "none", adjust.type = c("within", "across", "both")){
+function(model, spfromto, n=10, adjust.method = "none", adjust.type = c("both", "across", "within", "none")){
 	span.seq <- seq(from=spfromto[1], to=spfromto[2], 
 		length=n)
 	out.list <- list()
