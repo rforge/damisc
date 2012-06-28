@@ -6,7 +6,7 @@
 \alias{probit_cd}
 \alias{probit_dd}
 \title{Functions for Estimating Interaction Effects in Logit and Probit Models}
-\description{Norton and Ai (2003) and Norton, Wang and Ai (2004) discuss methods for calculating the appropriate marginal effects for interactions in binary logit/probit models.  These functions are direct translations of the Norton, Wang and Ai (2004) Stata code.  These functions are not intended to be called by the user directly, rather they are called as needed by \code{\link{intEff}}.}
+\description{Norton and Ai (2003) and Norton, Wang and Ai (2004) discuss methods for calculating the appropriate marginal effects for interactions in binary logit/probit models.  These functions are direct translations of the Norton, Wang and Ai (2004) Stata code.  These functions are not intended to be called by the user directly, rather they are called as needed by \code{intEff}.}
 \usage{
    logit_cc(obj=obj, int.var=int.var, vars=vars, b=b, X=X) 
    logit_cd(obj=obj, int.var=int.var, vars=vars, b=b, X=X) 
@@ -16,7 +16,7 @@
    probit_dd(obj=obj, int.var=int.var, vars=vars, b=b, X=X)
 }
 \arguments{
-  \item{obj}{A binary logit or probit model estimated with \code{\link{glm}}.}
+  \item{obj}{A binary logit or probit model estimated with \code{glm}.}
   \item{int.var}{The name of the interaction variable.}
   \item{vars}{A vector of the two variables involved in the interaction.}
   \item{b}{Coefficients from the \code{glm} object.}

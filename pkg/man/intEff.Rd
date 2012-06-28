@@ -6,7 +6,7 @@
 	intEff(obj, vars, data)
 }
 \arguments{
-  \item{obj}{A binary logit or probit model estimated with \code{\link{glm}}.}
+  \item{obj}{A binary logit or probit model estimated with \code{glm}.}
   \item{vars}{A vector of the two variables involved in the interaction.}
   \item{data}{A data frame used in the call to \code{obj}.}
 }

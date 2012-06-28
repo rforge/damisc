@@ -6,7 +6,7 @@
 DAintfun(obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL,...)
 }
 \arguments{
-  \item{obj}{A model object of class 'lm'}
+  \item{obj}{A model object of class \code{lm}}
   \item{varnames}{A two-element character vector where each element is the name of a variable involved in a two-way interaction.}
   \item{theta}{Angle defining the azimuthal viewing direction to be passed to \code{persp}}
   \item{phi}{Angle defining the colatitude viewing direction to be passed to \code{persp}}

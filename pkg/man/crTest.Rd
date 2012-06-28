@@ -6,9 +6,9 @@
 crTest(model, adjust.method="none", ...)
 }
 \arguments{
-  \item{model}{A model object of class \code{\link{lm}}}
-  \item{adjust.method}{Adjustment method for multiple-testing procedure, using \code{\link{p.adjust}} from \code{stats}.}
-  \item{...}{Other arguments to be passed down to the call to \code{\link{loess}}. }
+  \item{model}{A model object of class \code{lm}}
+  \item{adjust.method}{Adjustment method for multiple-testing procedure, using \code{p.adjust} from \code{stats}.}
+  \item{...}{Other arguments to be passed down to the call to \code{loess}. }
 }
 \value{
 	A matrix with the following columns for each variable: 

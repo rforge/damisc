@@ -8,7 +8,7 @@ DAintfun2(obj, varnames, rug=TRUE, ticksize=-.03, hist=FALSE, hist.col="gray75",
 	xlab = NULL, ylab = NULL, plot.type = "screen")
 }
 \arguments{
-  \item{obj}{A model object of class `lm'}
+  \item{obj}{A model object of class \code{lm}}
   \item{varnames}{A two-element character vector where each element is the name of a variable involved in a two-way interaction.}
   \item{rug}{Logical indicating whether a rug plot should be included.}
   \item{ticksize}{A scalar indicating the size of ticks in the rug plot (if included) positive values put the rug inside the plotting region and negative values put it outside the plotting region.}
@@ -20,7 +20,7 @@ DAintfun2(obj, varnames, rug=TRUE, ticksize=-.03, hist=FALSE, hist.col="gray75",
   \item{name.stem}{A character string giving filename to which the appropriate extension will be appended}
   \item{xlab}{Optional vector of length two giving the x-labels for the two plots that are generated.  The first element of the vector corresponds to the figure plotting the conditional effect of the first variable in \code{varnames} given the second and the second element of the vector corresponds to the figure plotting the conditional effect of the second variable in \code{varnames} conditional on the first.}
   \item{ylab}{Optional vector of length two giving the y-labels for the two plots that are generated.  The first element of the vector corresponds to the figure plotting the conditional effect of the first variable in \code{varnames} given the second and the second element of the vector corresponds to the figure plotting the conditional effect of the second variable in \code{varnames} conditional on the first.}
-  \item{plot.type}{One of `pdf', `png', `eps' or `screen', where the one of the first three will produce two graphs starting with \code{name.stem} written to the appropriate file type and the third will produce graphical output on the screen.}
+  \item{plot.type}{One of \sQuote{pdf}, \sQuote{png}, \sQuote{eps} or \sQuote{screen}, where the one of the first three will produce two graphs starting with \code{name.stem} written to the appropriate file type and the third will produce graphical output on the screen.}
 }
 \details{
 This function produces graphs along the lines suggested by Brambor, Clark and Golder (2006) and Berry, Golder and Milton (2012), that show the conditional effect of one variable in an interaction given the values of the conditioning variable.  This is an alternative to the methods proposed by John Fox in his \code{effects} package, upon which this function depends heavily.\cr\cr
