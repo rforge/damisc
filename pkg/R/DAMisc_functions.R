@@ -1491,3 +1491,23 @@ function(model, spfromto, n=10, adjust.method = "none", adjust.type = c("both", 
 	rownames(pvals) <- predictor.names(model)
 	ret = list(x=span.seq, y=t(pvals))
 }
+scaleDataFrame <- 
+function(data){
+classes <- sapply(1:ncol(data), function(x)class(data[,x]))
+dummies <- apply(data, 2, function(x)prod(x %in% c(0,1,NA)))
+nn.ind <- union(which(dummies == 1), which(classes == "factor"))
+num.ind <- setdiff(1:ncol(data), nn.ind)
+if(length(num.ind) == 0){stop("No Numeric Variables in Data Frame")}
+num.dat <- data[,num.ind]
+nonnum.dat <- data[,nn.ind]
+if(is.null(dimnames(num.dat))){
+	num.dat <- data.frame(num.dat)
+	names(num.dat) <- names(data)[num.ind]
+}
+if(is.null(dimnames(nonnum.dat))){
+	nonnum.dat <- data.frame(nonnum.dat)
+	names(nonnum.dat) <- names(data)[nn.ind]
+}
+newdat <- cbind(as.data.frame(scale(num.dat)), as.data.frame(nonnum.dat))
+newdat
+}

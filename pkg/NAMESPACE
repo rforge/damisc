@@ -18,6 +18,7 @@ export(
 	poisGOF, 
 	pre, 
 	prepanel.ci, 
+	scaleDataFrame,
 	searchVarLabels, 
 	ziChange
 )
