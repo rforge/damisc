@@ -1519,7 +1519,6 @@ if(is.null(dimnames(nonnum.dat))){
 newdat <- cbind(as.data.frame(scale(num.dat)), as.data.frame(nonnum.dat))
 newdat
 }
-
 outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE, 
 	col.marg=TRUE, row.marg=TRUE, digits = 3, type = "word", file=NULL){
 	require(xtable)
@@ -1551,7 +1550,7 @@ outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
 	sink(file=ifelse(is.null(file), "tmp_xt.txt", file), type="output", append=F)
 	print(xtable(mat), include.rownames=F, include.colnames=T)
 	sink(file=NULL)
-	rl <- readLines("tmp_xt.txt" )
+	rl <- readLines(ifelse(is.null(file), "tmp_xt.txt", file))
 	if(type == "word"){
 		rl <- rl[-c(1:6,8)]
 		rl <- rl[-c((length(rl)-3):length(rl))]
@@ -1561,3 +1560,4 @@ outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
 	}
 	return(noquote(rl))
 }
+
