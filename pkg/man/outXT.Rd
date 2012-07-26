@@ -9,7 +9,7 @@
 \arguments{
   \item{obj}{A list returned by \code{CrossTable} from the \code{gmodels} package.}
   \item{count}{Logical indicating whether the cell frequencies should be returned.}
-  \item{prop.f}{Logical indicating whether the row proportions should be returned.}
+  \item{prop.r}{Logical indicating whether the row proportions should be returned.}
   \item{prop.c}{Logical indicating whether the column proportions should be returned.}
   \item{prop.t}{Logical indicating whether the cell proportions should be returned.}
   \item{col.marg}{Logical indicating whether the column marginals should be printed.}	
