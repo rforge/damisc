@@ -1,7 +1,7 @@
 \name{outXT}
 \alias{outXT}
 \title{Create LaTeX or CSV versions of an Object Produced by CrossTable}
-\description{\code{outXT} takes the output from \code{CrossTable} in the \code{gmodels} package and produces either \LaTeX code or CSV file that can be imported into word processing software. }
+\description{\code{outXT} takes the output from \code{CrossTable} in the \code{gmodels} package and produces either LaTeX code or CSV file that can be imported into word processing software. }
 \usage{
 	outXT(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE, 
 		col.marg=TRUE, row.marg=TRUE, digits = 3, type = "word", file=NULL)
