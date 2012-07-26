@@ -1537,9 +1537,9 @@ outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
 	mat <- matrix(c(out), ncol=nrow(tmp.list[[1]]), byrow=T)
 	rownames(mat) <- NULL
 	rn <- rep("", length=nrow(mat))
-	rn[seq(1,nrow(mat), by=length(tmp.list))] <- colnames(tmp.list[[1]])
+	rn[seq(1,nrow(mat), by=length(tmp.list))] <- rownames(obj$t)
 	mat <- cbind(rn, mat)
-	colnames(mat) <- c("", rownames(tmp.list[[1]]))
+	colnames(mat) <- c("", colnames(obj$t))
 	if(col.marg){mat <- rbind(mat, c("Total", as.character(apply(obj$t, 2, sum))))}
 	if(row.marg){
 		rmarg <- rep("", nrow(mat))
@@ -1561,4 +1561,3 @@ outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
 	}
 	return(noquote(rl))
 }
-
