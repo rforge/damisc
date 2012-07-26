@@ -1358,9 +1358,17 @@ int.ind2 <- sapply(faccoef, function(x){
 else{int.ind <- int.ind2}}
 
 inds <- cbind(main.ind, int.ind)
+if(!("matrix" %in% class(inds))){inds <- matrix(inds, nrow=1)}
 inds <- inds[-which(main.ind == 0), ]
 
+if(length(faclevs) < 2){stop("Factor must have at least two unique values")}
+if(length(faclevs) > 2){
 combs <- combn(length(faclevs)-1, 2)
+}
+else{
+	combs <- matrix(faclevs, ncol=1)
+}
+
 tmp.A <- matrix(0, nrow=n, ncol=length(b))
 A.list <- list()
 k <- 1
@@ -1511,3 +1519,46 @@ if(is.null(dimnames(nonnum.dat))){
 newdat <- cbind(as.data.frame(scale(num.dat)), as.data.frame(nonnum.dat))
 newdat
 }
+
+outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE, 
+	col.marg=TRUE, row.marg=TRUE, digits = 3, type = "word", file=NULL){
+	require(xtable)
+	if(!(type %in% c("word", "latex"))){stop("type must be one of 'word' or 'latex'")}
+	tmp.list <- list()
+	k <- 1
+	if(count){tmp.list[[k]] <- matrix(sprintf("%.0f", c(t(obj$t))), ncol=nrow(obj$t)); k <- k+1}
+	if(prop.r){tmp.list[[k]] <- matrix(sprintf(paste("%.", digits, "f", sep=""), 
+		c(t(obj$prop.r))), ncol=nrow(obj$prop.r)); k <- k+1}
+	if(prop.c){tmp.list[[k]] <- matrix(sprintf(paste("%.", digits, "f", sep=""), 
+		c(t(obj$prop.c))), ncol=nrow(obj$prop.c)); k <- k+1}
+	if(prop.t){tmp.list[[k]] <- matrix(sprintf(paste("%.", digits, "f", sep=""), 
+		c(t(obj$prop.t))), ncol=nrow(obj$prop.t)); k <- k+1}
+	out <- do.call(rbind, tmp.list)
+	mat <- matrix(c(out), ncol=nrow(tmp.list[[1]]), byrow=T)
+	rownames(mat) <- NULL
+	rn <- rep("", length=nrow(mat))
+	rn[seq(1,nrow(mat), by=length(tmp.list))] <- colnames(tmp.list[[1]])
+	mat <- cbind(rn, mat)
+	colnames(mat) <- c("", rownames(tmp.list[[1]]))
+	if(col.marg){mat <- rbind(mat, c("Total", as.character(apply(obj$t, 2, sum))))}
+	if(row.marg){
+		rmarg <- rep("", nrow(mat))
+		rmarg[seq(1, length(rmarg)-as.numeric(col.marg), by=length(tmp.list))] <- as.character(apply(obj$t, 1, sum))
+		mat <- cbind(mat, rmarg)
+		colnames(mat)[ncol(mat)] <- "Total"
+	}
+	if(row.marg & col.marg){mat[nrow(mat), ncol(mat)] <- sum(c(obj$t))}
+	sink(file=ifelse(is.null(file), "tmp_xt.txt", file), type="output", append=F)
+	print(xtable(mat), include.rownames=F, include.colnames=T)
+	sink(file=NULL)
+	rl <- readLines("tmp_xt.txt" )
+	if(type == "word"){
+		rl <- rl[-c(1:6,8)]
+		rl <- rl[-c((length(rl)-3):length(rl))]
+		rl <- gsub("\\\\", "", rl, fixed=T)
+		rl <- gsub(" & ", ",", rl, fixed=T)
+		if(!is.null(file)){writeLines(rl, con=file)}
+	}
+	return(noquote(rl))
+}
+
