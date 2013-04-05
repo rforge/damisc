@@ -4,7 +4,7 @@
 \description{This function works on linear models with a single interaction between a continuous (numeric) variable and a factor.  The output is a data frame that gives the predicted effect of moving from each category to each other category of the factor over the range of values of the continuous conditioning variable.}
 \usage{
 	intQualQuant(obj, vars, level = .95, labs=NULL, 
-		n=10, onlySig=FALSE)
+		n=10, onlySig=FALSE, plot=FALSE)
 }
 \arguments{
   \item{obj}{An object of class \code{lm}.}
@@ -13,6 +13,7 @@
   \item{labs}{An optional vector of labels that will be used to identify the effects, if \code{NULL}, the factor levels will be used.}
   \item{n}{Number of values of the conditioning variable to use.}
   \item{onlySig}{Logical indicating whether only contrasts with significant differences should be returned.  Significance is determined to exist if the largest lower bound is greater than zero or the smallest upper bound is smaller than zero.}
+  \item{plot}{Logical indicating whether a plot should be made (if \code{TRUE}) or the data should be returned (if \code{FALSE}).}	
 }
 \value{
 A data frame with the following values: 
@@ -29,6 +30,6 @@ library(car)
 data(Ornstein)
 mod <- lm(interlocks ~ log(assets)*nation, data=Ornstein)
 mod.out <- intQualQuant(mod, c("log(assets)", "nation"), 
-	n=25)
+	n=25, plot=FALSE)
 }
 
