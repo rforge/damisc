@@ -1561,3 +1561,93 @@ outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
 	return(noquote(rl))
 }
 
+intFacQuant <- function(obj, vars, nvals=100, plot=FALSE){
+	require(lattice)
+	if(!("x" %in% names(obj))){
+		obj <- update(obj, x=T)
+	}
+	cl <- attr(terms(obj), "dataClasses")
+	cl <- cl[which(names(cl) %in% vars)]
+	if(!(length(which(cl == "factor")) == 1 & length(which(cl != "factor")) == 1)){stop("One variable must be a factor and the other continuous")}
+	vars <- names(cl)
+	fvar <- names(cl)[which(cl == 'factor')]
+	cvar <- names(cl)[which(cl == 'numeric')]
+	levs <- obj$xlevels[[fvar]]
+	if(length(levs) < 2){stop("factor must have at least two levels")}
+	rg.cvar <- range(obj$x[,cvar])
+	s <- seq(rg.cvar[1], rg.cvar[2], length=nvals)
+	if(length(levs) > 2){
+		combs <- combn(levs, 2)
+	}
+	else{combs <- matrix(levs, ncol=1)}
+	withbase <- which(combs[1,] == levs[1])
+	fv.col <- which(rownames(attr(obj$terms, "factors")) == fvar)
+	cv.col <- which(rownames(attr(obj$terms, "factors")) == cvar)
+	res <- list(ncol(combs))
+	b <- coef(obj)
+	v <- vcov(obj)
+	for(i in withbase){
+		{if(cl[1] == "factor"){
+			i2 <- paste(c(fvar, combs[2,i], ":", cvar), collapse="")
+		}
+		else{
+			i2 <- paste(c(cvar, ":", fvar, combs[2,i]), collapse="")
+		}}
+		c2 <- paste(fvar, combs[2,i], sep="")
+		A <- matrix(0, ncol=length(b), nrow=length(s))
+		colnames(A) <- names(b)
+		A[,c2] <- 1
+		A[,i2] <- s
+		est <- A %*% b
+		se.est <- sqrt(diag(A %*% v %*% t(A)))
+		lower <- est + qt(.025, obj$df.residual)*se.est
+		upper <- est + qt(.975, obj$df.residual)*se.est
+		res[[i]] <- data.frame(x=s, est=est, lower=lower, upper=upper, contr=paste(combs[2,i], "-", combs[1,i], sep=""))
+		names(res)[i] <- paste(combs[2,i], "-", combs[1,i], sep="")
+	}
+	if(ncol(combs) > max(withbase)){
+	for(i in (max(withbase)+1):ncol(combs)){
+		{if(cl[1] == "factor"){
+			i1 <- paste(c(fvar, combs[1,i], ":", cvar), collapse="")
+			i2 <- paste(c(fvar, combs[2,i], ":", cvar), collapse="")
+		}
+		else{
+			i1 <- paste(c(cvar, ":", fvar, combs[1,i]), collapse="")
+			i2 <- paste(c(cvar, ":", fvar, combs[2,i]), collapse="")
+		}}
+		c1 <- paste(fvar, combs[1,i], sep="")
+		c2 <- paste(fvar, combs[2,i], sep="")
+		A <- matrix(0, ncol=length(b), nrow=length(s))
+		colnames(A) <- names(b)
+		A[,c2] <- 1
+		A[,i2] <- s
+		A[,c1] <- -1
+		A[,i1] <- -s
+		est <- A %*% b
+		se.est <- sqrt(diag(A %*% v %*% t(A)))
+		lower <- est + qt(.025, obj$df.residual)*se.est
+		upper <- est + qt(.975, obj$df.residual)*se.est
+		res[[i]] <- data.frame(x=s, est=est, lower=lower, upper=upper, contr=paste(combs[2,i], "-", combs[1,i], sep=""))
+		names(res)[i] <- paste(combs[2,i], "-", combs[1,i], sep="")
+	}
+}
+	res <- do.call(rbind, res)
+	rownames(res) <- NULL
+	if(plot == FALSE){
+	return(res)
+	}
+	else{
+	rl <- range(c(res[,2:4]))
+	p <- xyplot(est ~ x | contr, data=res, xlab = cvar, ylab = "Predicted Difference", ylim = rl, 
+		panel = function(x,y,subscripts){
+			panel.abline(h=0, lty=3)
+			panel.lines(x,y, lty=1, col="black")
+			panel.lines(x, res$lower[subscripts], lty=2, col="black")
+			panel.lines(x, res$upper[subscripts], lty=2, col="black")
+		})		
+	plot(p)
+	return(p)
+	}
+
+}
+
