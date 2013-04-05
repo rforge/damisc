@@ -1406,6 +1406,7 @@ dat$lower <- dat$fit - qt(level,
 	obj$df.residual)*dat$se.fit
 dat$upper <- dat$fit + qt(level, 
 	obj$df.residual)*dat$se.fit
+res <- dat
 if(onlySig){
 	sigs <- do.call(rbind, 
 		by(dat[,c("lower", "upper")], 
