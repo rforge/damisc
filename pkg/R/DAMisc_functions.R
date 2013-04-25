@@ -3,18 +3,18 @@ function (mod)
 {
     mod <- update(mod, x = TRUE, y = TRUE)
     y <- mod$y
-    null.mod <- update(mod, ".~1")
+    null.mod <- update(mod, ".~1", data=model.frame(mod))
     b <- mod$coef[-1]
     var.ystar <- t(b) %*% var(model.matrix(mod)[, -1]) %*% b
     G <- -2 * (logLik(null.mod) - logLik(mod))
     res.col1 <- c(logLik(null.mod), deviance(mod), NA, 1 - (logLik(mod)/logLik(null.mod)), 
-        1 - (exp(logLik(null.mod))/exp(logLik(mod)))^(2/length(mod$residuals)), 
+        1 - exp(2*(logLik(null.mod) - logLik(mod))/length(mod$residuals)), 
         var.ystar/(var.ystar + switch(mod$family[[2]], logit = pi^2/3, 
             probit = 1)), mean(mod$y == as.numeric(fitted(mod) > 
             0.5)), stats:::BIC(mod))
     res.col2 <- c(logLik(mod), G, pchisq(G, 8, lower.tail = F), 
         1 - ((logLik(mod) - mod$rank)/logLik(null.mod)), res.col1[5]/(1 - 
-            (exp(logLik(null.mod))^(2/length(mod[["residuals"]])))), 
+            (exp(2*logLik(null.mod)/length(mod[["residuals"]])))), 
         1 - (sum((y - fitted(mod))^2)/sum((y - mean(y))^2)), 
         (sum(mod$y == as.numeric(fitted(mod) > 0.5)) - max(table(y)))/(length(mod$residuals) - 
             max(table(y))), stats:::AIC(mod))
@@ -780,7 +780,7 @@ function (mod1, mod2 = NULL, sim = FALSE, R = 2500)
         }
         if (is.null(mod2)) {
             y <- mod1[["y"]]
-            mod2 <- update(mod1, ". ~ 1")
+            mod2 <- update(mod1, ". ~ 1", data=model.frame(mod1))
         }
         pred.mod2 <- as.numeric(predict(mod2, type = "response") >= 
             0.5)
