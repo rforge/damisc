@@ -1321,8 +1321,8 @@ BGMtest <- function(obj, vars, digits = 3, level = 0.05, two.sided=T){
 			"p-value"))
 	return(noquote(out))
 }
-intQualQuant <- function(obj, vars, level=.95, 
-	labs=NULL, n=10, onlySig=FALSE, plot=FALSE){
+intQualQuant <- function(obj, vars, level=.95 , 
+	labs=NULL, n=10 , onlySig=FALSE, plot=FALSE){
 cl <- attr(terms(obj), "dataClasses")[vars]
 if(length(cl) != 2){
 	stop("vars must identify 2 and only 2 model terms")
@@ -1345,12 +1345,12 @@ main.ind <- sapply(faccoef, function(x)
 main.ind <- sapply(main.ind, function(x)
 	ifelse(length(x) == 0, 0, x))
 int.ind1 <- sapply(faccoef, function(x){
-	g1 <- grep(paste("[a-z]*\\:", x, "$", sep=""), 
+	g1 <- grep(paste("[a-zA-Z0-9]*\\:", x, "$", sep=""), 
 		names(b))
 	ifelse(length(g1) == 0, 0, g1)
 })
 int.ind2 <- sapply(faccoef, function(x){
-	g2 <- grep(paste("^", x, "\\:[a-z]*", sep=""), 	
+	g2 <- grep(paste("^", x, "\\:[a-zA-Z0-9]*", sep=""), 	
 		names(b))
 	ifelse(length(g2) == 0, 0, g2)
 })
@@ -1358,16 +1358,25 @@ int.ind2 <- sapply(faccoef, function(x){
 else{int.ind <- int.ind2}}
 
 inds <- cbind(main.ind, int.ind)
+nc <- ncol(inds)
+dn <- dimnames(inds)
 if(!("matrix" %in% class(inds))){inds <- matrix(inds, nrow=1)}
-inds <- inds[-which(main.ind == 0), ]
+outind <- which(main.ind == 0)
+inds <- inds[-outind, ]
+if(length(inds) == nc){
+	inds <- matrix(inds, ncol=nc)
+}
+rownames(inds) <- dn[[1]][-outind]
+colnames(inds) <- dn[[2]]
+
 
 if(length(faclevs) < 2){stop("Factor must have at least two unique values")}
-if(length(faclevs) > 2){
+{if(length(faclevs) > 2){
 combs <- combn(length(faclevs)-1, 2)
 }
 else{
-	combs <- matrix(faclevs, ncol=1)
-}
+	combs <- matrix(1:length(faclevs), ncol=1)
+}}
 
 tmp.A <- matrix(0, nrow=n, ncol=length(b))
 A.list <- list()
@@ -1378,6 +1387,7 @@ for(i in 1:nrow(inds)){
 	A.list[[k]][,inds[i,2]] <- quantseq
 	k <- k+1
 }
+if(nrow(inds) > 1){
 for(i in 1:ncol(combs)){
 	A.list[[k]] <- tmp.A
 	A.list[[k]][,inds[combs[1,i], 1]] <- -1
@@ -1385,6 +1395,7 @@ for(i in 1:ncol(combs)){
 	A.list[[k]][,inds[combs[1,i], 2]] <- -quantseq
 	A.list[[k]][,inds[combs[2,i], 2]] <- quantseq
 	k <- k+1
+}
 }
 
 effs <- lapply(A.list, function(x)x%*%b)
@@ -1421,12 +1432,9 @@ if(plot == FALSE){
 else{
 	rl <- range(c(res[, c("lower", "upper")]))
 	p <- xyplot(fit ~ x | contrast, data=res, xlab = quantvar, ylab = "Predicted Difference", ylim = rl, 
-		panel = function(x,y,subscripts){
-			panel.abline(h=0, lty=3)
-			panel.lines(x,y, lty=1, col="black")
-			panel.lines(x, res$lower[subscripts], lty=2, col="black")
-			panel.lines(x, res$upper[subscripts], lty=2, col="black")
-		})		
+		lower=res$lower, upper=res$upper, 
+		prepanel = prepanel.ci, 
+		panel = panel.ci, zl=TRUE)
 	plot(p)
 	return(p)
 }
