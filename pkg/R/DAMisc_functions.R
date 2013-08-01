@@ -281,7 +281,7 @@ function (obj, varnames, rug = TRUE, ticksize = -0.03, hist = FALSE,
     }
 }
 glmChange <-
-function (obj, data, typical.dat = NULL) 
+function (obj, data, typical.dat = NULL, diffchange = c("range", "sd", "unit")) 
 {
     vars <- names(attr(terms(obj), "dataClasses"))[-1]
     pols <- grep("poly", vars)
@@ -325,8 +325,17 @@ function (obj, data, typical.dat = NULL)
         }
     }
     vars <- vars[sapply(minmax, function(x) is.na(x[1]))]
+	mmc <- match.arg(diffchange)
     for (i in 1:length(vars)) {
+		if(mmc == "range"){
         minmax[[vars[i]]] <- range(data[[vars[i]]], na.rm = T)
+		}
+		if(mmc == "sd"){
+        minmax[[vars[i]]] <- median(data[[vars[i]]], na.rm = T) + c(-.5,.5)*sd(data[[vars[i]]], na.rm=T)
+		}
+		if(mmc == "unit"){
+        minmax[[vars[i]]] <- median(data[[vars[i]]], na.rm = T) + c(-.5,.5)
+		}
         meds[[vars[i]]] <- median(data[[vars[i]]], na.rm = T)
     }
     tmp.df <- do.call(data.frame, lapply(meds, function(x) rep(x, 
@@ -576,7 +585,7 @@ function (obj, pval = 0.05, two.sided = TRUE, flag.sig = TRUE,
     return(b)
 }
 multiChange <-
-function (obj, data, typical.dat = NULL) 
+function (obj, data, typical.dat = NULL, diffchange=c("range", "sd", "unit")) 
 {
     vars <- names(attr(terms(obj), "dataClasses"))[-1]
     pols <- grep("poly", vars)
@@ -622,8 +631,17 @@ function (obj, data, typical.dat = NULL)
         }
     }
     vars <- vars[sapply(minmax, function(x) is.na(x[1]))]
+	mmc <- match.arg(diffchange)
     for (i in 1:length(vars)) {
+		if(mmc == "range"){
         minmax[[vars[i]]] <- range(data[[vars[i]]], na.rm = T)
+		}
+		if(mmc == "sd"){
+        minmax[[vars[i]]] <- median(data[[vars[i]]], na.rm = T) + c(-.5,.5)*sd(data[[vars[i]]], na.rm=T)
+		}
+		if(mmc == "unit"){
+        minmax[[vars[i]]] <- median(data[[vars[i]]], na.rm = T) + c(-.5,.5)
+		}
         meds[[vars[i]]] <- median(data[[vars[i]]], na.rm = T)
     }
     tmp.df <- do.call(data.frame, lapply(meds, function(x) rep(x, 
@@ -660,7 +678,7 @@ function (obj, data, typical.dat = NULL)
     return(ret)
 }
 ordChange <-
-function (obj, data, typical.dat = NULL) 
+function (obj, data, typical.dat = NULL, diffchange=c("range", "sd", "unit")) 
 {
     vars <- names(attr(terms(obj), "dataClasses"))[-1]
     pols <- grep("poly", vars)
@@ -703,8 +721,17 @@ function (obj, data, typical.dat = NULL)
         }
     }
     vars <- vars[sapply(minmax, function(x) is.na(x[1]))]
+	mmc <- match.arg(diffchange)
     for (i in 1:length(vars)) {
+		if(mmc == "range"){
         minmax[[vars[i]]] <- range(data[[vars[i]]], na.rm = T)
+		}
+		if(mmc == "sd"){
+        minmax[[vars[i]]] <- median(data[[vars[i]]], na.rm = T) + c(-.5,.5)*sd(data[[vars[i]]], na.rm=T)
+		}
+		if(mmc == "unit"){
+        minmax[[vars[i]]] <- median(data[[vars[i]]], na.rm = T) + c(-.5,.5)
+		}
         meds[[vars[i]]] <- median(data[[vars[i]]], na.rm = T)
     }
     tmp.df <- do.call(data.frame, lapply(meds, function(x) rep(x, 
