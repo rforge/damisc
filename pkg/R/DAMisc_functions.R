@@ -281,7 +281,7 @@ function (obj, varnames, rug = TRUE, ticksize = -0.03, hist = FALSE,
     }
 }
 glmChange <-
-function (obj, data, typical.dat = NULL, diffchange = c("range", "sd", "unit")) 
+function (obj, data, typical.dat = NULL, diffchange = c("range", "sd", "unit"), sim=FALSE, R=1000) 
 {
     vars <- names(attr(terms(obj), "dataClasses"))[-1]
     pols <- grep("poly", vars)
@@ -359,13 +359,20 @@ function (obj, data, typical.dat = NULL, diffchange = c("range", "sd", "unit"))
         tmp.df[inds[j]:(inds[j] + 1), j] <- minmax[[j]]
     }
     preds <- matrix(predict(obj, newdata = tmp.df, type = "response"), 
-        ncol = 2, byrow = T)
+        ncol = 2, byrow = TRUE)
     diffs <- cbind(preds, apply(preds, 1, diff))
     colnames(diffs) <- c("min", "max", "diff")
     rownames(diffs) <- rn
     minmax.mat <- do.call(cbind, minmax)
     minmax.mat <- rbind(c(unlist(meds)), minmax.mat)
     rownames(minmax.mat) <- c("typical", "min", "max")
+	if(sim){
+    preds <- predict(obj, newdata = tmp.df, type = "link", se.fit=TRUE)
+	res <- sapply(1:R, function(x)apply(matrix(family(obj)$linkinv(with(preds, rnorm(length(preds$fit), fit, se.fit))), ncol=2, byrow=TRUE), 1, diff))
+	cis <- t(apply(res, 1, quantile, c(.025, .975)))
+	colnames(cis) <- c("lower", "upper")
+	diffs <- cbind(diffs, cis)
+	}
     ret <- list(diffs = diffs, minmax = minmax.mat)
     class(ret) <- "change"
     return(ret)
@@ -1610,4 +1617,147 @@ outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
 	}
 	return(noquote(rl))
 }
+
+glmChange2 <-
+function (obj, varname, data, change=c("unit", "sd"), R=1500) 
+{
+	require(MASS)
+    vars <- names(attr(terms(obj), "dataClasses"))[-1]
+	vars <- gsub("poly\\((.*?),.*?\\)", "\\1", vars)
+	vars <- gsub("bs\\((.*?),.*?\\)", "\\1", vars)
+	vars <- gsub("log\\((.*?),.*?\\)", "\\1", vars)
+    rn <- vars
+    var.classes <- sapply(vars, function(x) class(data[[x]]))
+	b <- mvrnorm(R, coef(obj), vcov(obj))
+	change <- match.arg(change)
+	delt <- switch(change, 
+		unit=1, 
+		sd = sd(data[[varname]], na.rm=T))
+	if(is.numeric(data[[varname]])){
+		d0 <- d1 <- data
+		d0[[varname]] <- d0[[varname]]-(.5*delt)
+		d1[[varname]] <- d1[[varname]]+(.5*delt)
+		X0 <- model.matrix(obj, data=d0)
+		X1 <- model.matrix(obj, data=d1)
+		p0 <- family(obj)$linkinv(X0 %*% t(b))
+		p1 <- family(obj)$linkinv(X1 %*% t(b))
+		diff <- p1-p0
+		eff <- colMeans(diff)
+		res <- matrix(c(mean(eff), quantile(eff, c(.025,.975))), nrow=1)
+		colnames(res) <- c("mean", "lower", "upper")
+		rownames(res) <- varname
+	}
+	if(!is.numeric(data[[varname]]) & length(unique(na.omit(data[[varname]]))) == 2){
+		l <- obj$xlevels[[varname]]
+		X0 <- X1 <- model.matrix(obj)
+		X0[,grep(paste(varname, l[2], sep=""), colnames(X0))] <- 0
+		X1[,grep(paste(varname, l[2], sep=""), colnames(X0))] <- 1
+		p0 <- family(obj)$linkinv(X0 %*% t(b))
+		p1 <- family(obj)$linkinv(X1 %*% t(b))
+		diff <- p1-p0
+		eff <- colMeans(diff)
+		res <- matrix(c(mean(eff), quantile(eff, c(.025,.975))), nrow=1)
+		colnames(res) <- c("mean", "lower", "upper")
+		rownames(res) <- varname
+	}
+	if(!is.numeric(data[[varname]]) & length(unique(na.omit(data[[varname]]))) > 2){
+		l <- obj$xlevels[[varname]]
+		X.list <- list()
+		for(j in 1:length(l)){
+			X.list[[j]] <- model.matrix(obj)
+		}
+		l1 <- paste(varname, l, sep="")
+		X.list[[1]][,which(colnames(X.list[[1]]) %in% l1)] <- 0
+		for(j in 2:length(l1)){
+			X.list[[j]][, which(colnames(X.list[[1]]) == l1[j])] <- 1
+		}
+		combs <- combn(length(X.list), 2)
+		d.list <- list()
+		for(j in 1:ncol(combs)){
+			d.list[[j]] <- family(obj)$linkinv(X.list[[combs[2,j]]] %*% t(b))-family(obj)$linkinv(X.list[[combs[1,j]]] %*% t(b))
+		}
+		eff <- sapply(d.list, colMeans)
+		res <- apply(eff, 2, function(x)c(mean(x), quantile(x, c(.025,.975))))
+		cl <- array(l[combs], dim=dim(combs))
+		rownames(res) <- c("mean", "lower", "upper")
+		colnames(res) <- apply(cl[c(2,1), ], 2, paste, collapse="-")
+		res <- t(res)
+	}
+	return(res)
+}
+aveEffPlot <- function (obj, varname, data, R=1500, nvals=25, plot=TRUE,...) 
+{
+	require(MASS)
+	require(lattice)
+	require(DAMisc)
+    vars <- names(attr(terms(obj), "dataClasses"))[-1]
+	vars <- gsub("poly\\((.*?),.*?\\)", "\\1", vars)
+	vars <- gsub("bs\\((.*?),.*?\\)", "\\1", vars)
+	vars <- gsub("log\\((.*?),.*?\\)", "\\1", vars)
+    rn <- vars
+    var.classes <- sapply(vars, function(x) class(data[[x]]))
+	b <- mvrnorm(R, coef(obj), vcov(obj))
+	if(is.numeric(data[[varname]])){
+		s <- seq(min(data[[varname]], na.rm=T), max(data[[varname]], na.rm=T), length=nvals)
+		dat.list <- list()
+		for(i in 1:length(s)){
+			dat.list[[i]] <- data
+			dat.list[[i]][[varname]] <- s[i]
+		}
+		mm <- lapply(dat.list, function(x)model.matrix(obj, data=x))
+		probs <- lapply(mm, function(x)family(obj)$linkinv(x %*% t(b)))
+		cmprobs <- sapply(probs, colMeans)
+		ciprobs <- t(apply(cmprobs, 2, function(x)c(mean(x), quantile(x, c(.025,.975)))))
+		colnames(ciprobs) <- c("mean", "lower", "upper")
+		ciprobs <- cbind(s, ciprobs)
+		tmp <- as.data.frame(ciprobs)
+		if(plot){
+			pl <- xyplot(mean ~ s, data=tmp,  xlab=varname, ylab="Predicted Value", ...,
+				lower=tmp$lower, upper=tmp$upper, 
+				prepanel = prepanel.ci, 
+				panel = function(x,y, lower, upper){
+					panel.lines(x,y, col="black", lty=1)
+					panel.lines(x, lower, col="black", lty=2)
+					panel.lines(x, upper, col="black", lty=2)
+			})
+			return(pl)
+		}
+		else{
+			return(tmp)
+		}
+	}
+	if(!is.numeric(data[[varname]])){
+		l <- obj$xlevels[[varname]]
+		dat.list <- list()
+		for(j in 1:length(l)){
+			dat.list[[j]] <- model.matrix(obj)
+		}
+		l1 <- paste(varname, l, sep="")
+		dat.list[[1]][,which(colnames(dat.list[[1]]) %in% l1)] <- 0
+		for(j in 2:length(l1)){
+			dat.list[[j]][, which(colnames(dat.list[[1]]) == l1[j])] <- 1
+		}
+		probs <- lapply(dat.list, function(x)family(obj)$linkinv(x %*% t(b)))
+		cmprobs <- sapply(probs, colMeans)
+		ciprobs <- t(apply(cmprobs, 2, function(x)c(mean(x), quantile(x, c(.025,.975)))))
+		colnames(ciprobs) <- c("mean", "lower", "upper")
+		tmp <- as.data.frame(ciprobs)
+		tmp$s <- factor(1:length(l), labels=l)
+		if(plot){
+			pl <- xyplot(mean ~ s, data=tmp, xlab="", ylab="Predicted Value", ...,
+				lower=tmp$lower, upper=tmp$upper, 
+				prepanel = prepanel.ci, 
+				scales=list(x=list(at=1:length(l), labels=l)), 
+				panel = function(x,y, lower, upper){
+					panel.points(x,y, col="black", lty=1, pch=16)
+					panel.segments(x, lower, x, upper, lty=1, col="black")
+			})
+			return(pl)
+		}
+		else{
+			return(tmp)
+		}
+	}
+}
+
 

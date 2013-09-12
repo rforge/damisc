@@ -20,7 +20,9 @@ export(
 	prepanel.ci, 
 	scaleDataFrame,
 	searchVarLabels, 
-	ziChange
+	ziChange,
+	aveEffPlot,
+	glmChange2
 )
 
 S3method(print, pre)
