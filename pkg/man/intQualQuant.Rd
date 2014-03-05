@@ -4,7 +4,8 @@
 \description{This function works on linear models with a single interaction between a continuous (numeric) variable and a factor.  The output is a data frame that gives the predicted effect of moving from each category to each other category of the factor over the range of values of the continuous conditioning variable.}
 \usage{
 	intQualQuant(obj, vars, level = .95, labs=NULL, 
-		n=10, onlySig=FALSE, plot=FALSE)
+		n=10, onlySig=FALSE, plot=FALSE, 
+		vals = NULL)
 }
 \arguments{
   \item{obj}{An object of class \code{lm}.}
@@ -14,6 +15,7 @@
   \item{n}{Number of values of the conditioning variable to use.}
   \item{onlySig}{Logical indicating whether only contrasts with significant differences should be returned.  Significance is determined to exist if the largest lower bound is greater than zero or the smallest upper bound is smaller than zero.}
   \item{plot}{Logical indicating whether a plot should be made (if \code{TRUE}) or the data should be returned (if \code{FALSE}).}	
+  \item{vals}{A vector of values at which the continuous variable will be held constant.  If \code{NULL}, a sequence of length \code{n} across the variable's range will be used.}
 }
 \value{
 A data frame with the following values: 

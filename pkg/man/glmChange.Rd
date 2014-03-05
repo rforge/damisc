@@ -3,7 +3,8 @@
 \title{Maximal First Differences for Generalized Linear Models}
 \description{For objects of class \code{glm}, it calculates the change in predicted responses, for maximal discrete changes in all covariates holding all other variables constant at typical values.}
 \usage{
-glmChange(obj, data, typical.dat=NULL, diffchange=c("range", "sd", "unit"), sim=FALSE, R=1000)
+glmChange(obj, data, typical.dat=NULL, diffchange=c("range", "sd", "unit"), 
+    sim=FALSE, R=1000)
 }
 \arguments{
   \item{obj}{A model object of class \code{glm}.}

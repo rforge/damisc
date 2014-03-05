@@ -11,13 +11,13 @@ function (mod)
         1 - exp(2*(logLik(null.mod) - logLik(mod))/length(mod$residuals)), 
         var.ystar/(var.ystar + switch(mod$family[[2]], logit = pi^2/3, 
             probit = 1)), mean(mod$y == as.numeric(fitted(mod) > 
-            0.5)), stats:::BIC(mod))
+            0.5)), BIC(mod))
     res.col2 <- c(logLik(mod), G, pchisq(G, 8, lower.tail = F), 
         1 - ((logLik(mod) - mod$rank)/logLik(null.mod)), res.col1[5]/(1 - 
             (exp(2*logLik(null.mod)/length(mod[["residuals"]])))), 
         1 - (sum((y - fitted(mod))^2)/sum((y - mean(y))^2)), 
         (sum(mod$y == as.numeric(fitted(mod) > 0.5)) - max(table(y)))/(length(mod$residuals) - 
-            max(table(y))), stats:::AIC(mod))
+            max(table(y))), AIC(mod))
     res.vec <- c(res.col1, res.col2)[-3]
     res.col1 <- sprintf("%3.3f", res.col1)
     res.col1[3] <- ""
@@ -90,8 +90,6 @@ function (data, event, tvar, csunit, pad.ts = FALSE)
 DAintfun <-
 function (obj, varnames, theta = 45, phi = 10, xlab=NULL, ylab=NULL, zlab=NULL,...) 
 {
-    require(sm)
-    require(effects)
     if (length(varnames) != 2) {
         stop("varnames must be a vector of 2 variable names")
     }
@@ -798,7 +796,6 @@ function (obj)
 pre <-
 function (mod1, mod2 = NULL, sim = FALSE, R = 2500) 
 {
-    require(MASS)
     if (!is.null(mod2)) {
         if (mean(class(mod1) == class(mod2)) != 1) {
             stop("Model 2 must be either NULL or of the same class as Model 1\n")
@@ -1181,7 +1178,6 @@ function (object, coefs, n.coef)
 ziChange <-
 function (obj, data, typical.dat = NULL, type = "count") 
 {
-    require(gdata)
     vars <- as.character(formula(obj))[3]
     vars <- gsub("*", "+", vars, fixed = T)
     vars <- strsplit(vars, split = "|", fixed = T)[[1]]
@@ -1355,8 +1351,9 @@ BGMtest <- function(obj, vars, digits = 3, level = 0.05, two.sided=T){
 			"p-value"))
 	return(noquote(out))
 }
-intQualQuant <- function(obj, vars, level=.95 , 
-	labs=NULL, n=10 , onlySig=FALSE, plot=FALSE){
+intQualQuant <- function(obj, vars, level = .95 , 
+	labs = NULL, n = 10 , onlySig = FALSE, plot = FALSE, 
+	vals = NULL){
 cl <- attr(terms(obj), "dataClasses")[vars]
 if(length(cl) != 2){
 	stop("vars must identify 2 and only 2 model terms")
@@ -1370,8 +1367,13 @@ faclevs <- obj$xlevels[[facvar]]
 if(is.null(labs)){
 	labs <- faclevs
 }
-qrange <- range(obj$model[[quantvar]], na.rm=TRUE)
-quantseq <- seq(qrange[1], qrange[2], length=n)
+if(!is.null(vals)){
+	quantseq <- vals
+}
+else{
+	qrange <- range(obj$model[[quantvar]], na.rm=TRUE)
+	quantseq <- seq(qrange[1], qrange[2], length=n)
+}
 b <- coef(obj)
 faccoef <- paste(facvar, faclevs, sep="")
 main.ind <- sapply(faccoef, function(x)
@@ -1412,7 +1414,7 @@ else{
 	combs <- matrix(1:length(faclevs), ncol=1)
 }}
 
-tmp.A <- matrix(0, nrow=n, ncol=length(b))
+tmp.A <- matrix(0, nrow=length(quantseq), ncol=length(b))
 A.list <- list()
 k <- 1
 for(i in 1:nrow(inds)){
@@ -1497,15 +1499,15 @@ panel.2cat <- function(x,y,subscripts,lower,upper){
 crTest <- function(model, adjust.method="none",...){
 	cl <- attr(terms(model), "dataClasses")
 	cl <- cl[which(cl != "factor")]
-    terms <- car:::predictor.names(model)
+    terms <- predictor.names(model)
 	terms <- intersect(terms, names(cl))
     if (any(attr(terms(model), "order") > 1)) {
         stop("C+R plots not available for models with interactions.")
     }
 	terms.list <- list()
-	orders <- sapply(terms, function(x)car:::df.terms(model, x))
+	orders <- sapply(terms, function(x)df.terms(model, x))
 	for(i in 1:length(terms)){
-    tmp.x <- {if (car:::df.terms(model, terms[i]) > 1) predict(model, type = "terms", term = terms[i])
+    tmp.x <- {if (df.terms(model, terms[i]) > 1) predict(model, type = "terms", term = terms[i])
     else model.matrix(model)[, terms[i]]}
 	if(!is.null(colnames(tmp.x))){colnames(tmp.x) <- "x"}
 	terms.list[[i]] <- data.frame(x=tmp.x, 
@@ -1578,7 +1580,6 @@ newdat
 }
 outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE, 
 	col.marg=TRUE, row.marg=TRUE, digits = 3, type = "word", file=NULL){
-	require(xtable)
 	if(!(type %in% c("word", "latex"))){stop("type must be one of 'word' or 'latex'")}
 	tmp.list <- list()
 	k <- 1
@@ -1621,7 +1622,6 @@ outXT <- function(obj, count=TRUE, prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
 glmChange2 <-
 function (obj, varname, data, change=c("unit", "sd"), R=1500) 
 {
-	require(MASS)
     vars <- names(attr(terms(obj), "dataClasses"))[-1]
 	vars <- gsub("poly\\((.*?),.*?\\)", "\\1", vars)
 	vars <- gsub("bs\\((.*?),.*?\\)", "\\1", vars)
@@ -1687,9 +1687,6 @@ function (obj, varname, data, change=c("unit", "sd"), R=1500)
 }
 aveEffPlot <- function (obj, varname, data, R=1500, nvals=25, plot=TRUE,...) 
 {
-	require(MASS)
-	require(lattice)
-	require(DAMisc)
     vars <- names(attr(terms(obj), "dataClasses"))[-1]
 	vars <- gsub("poly\\((.*?),.*?\\)", "\\1", vars)
 	vars <- gsub("bs\\((.*?),.*?\\)", "\\1", vars)
